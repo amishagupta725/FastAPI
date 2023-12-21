@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Body, Path, Query, HTTPException
 from typing import Optional
 from pydantic import BaseModel, Field
+from starlette import status
 
 app = FastAPI()
 
@@ -42,18 +43,18 @@ pizzas = [Pizza(1, "Margherita", ["tomato", "mozzarella"], 5.99, 1),
           Pizza(5, "Frutti di Mare", ["tomato", "mozzarella", "seafood"], 8.99, 1),
         ]
 
-@app.get("/pizzas")
+@app.get("/pizzas", status_code = status.HTTP_200_OK)
 async def read_all_pizzas():
     return pizzas
 
-@app.get("/pizzas/{pizza_id}")
+@app.get("/pizzas/{pizza_id}", status_code = status.HTTP_200_OK)
 async def get_pizza_by_id(pizza_id : int = Path(gt=0)) :
     for pizza in pizzas :
         if pizza.id == pizza_id :
             return pizza
     raise HTTPException(status_code=404, detail="Pizza not found")
 
-@app.post("/pizzas")
+@app.post("/pizzas", status_code = status.HTTP_201_CREATED)
 async def add_pizza(pizza_request : PizzaRequest) :
     print(pizza_request)
     new_pizza = Pizza(**pizza_request.model_dump())
@@ -68,7 +69,7 @@ def find_id(pizza: Pizza):
         pizza.id = 1
     return pizza
 
-@app.put("/pizzas")
+@app.put("/pizzas", status_code = status.HTTP_204_NO_CONTENT)
 async def edit_pizza(pizza_request : PizzaRequest) :
     for pizza in pizzas :
         if pizza.id == pizza_request.id :
@@ -79,7 +80,7 @@ async def edit_pizza(pizza_request : PizzaRequest) :
             return pizza
     raise HTTPException(status_code=404, detail="Pizza not found")
 
-@app.delete("/pizzas/{pizza_id}")
+@app.delete("/pizzas/{pizza_id}", status_code = status.HTTP_204_NO_CONTENT)
 async def delete_pizza(pizza_id : int = Path(gt=0)) :
     for pizza in pizzas :
         if pizza_id == pizza.id :
